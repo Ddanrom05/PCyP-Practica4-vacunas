@@ -103,7 +103,7 @@ graph TD
   I[Dividir pacientes en k bloques] --> C1[Hilo 1: contar]
   I --> C2[Hilo 2: contar]
   I --> C3[Hilo k: contar]
-  C1 --> T[Acumular total con mutex (lock_guard)]
+  C1 --> T["Acumular total con mutex (lock_guard)"]
   C2 --> T
   C3 --> T
   T --> R[Mostrar total]
