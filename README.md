@@ -9,7 +9,7 @@ Recursos compartidos y su protección:
 | `pacientes` (vector) durante búsquedas | Solo lectura por varios hilos | No requiere exclusión: los datos no se modifican mientras hay hilos activos (todas las modificaciones ocurren en el hilo principal, después del `join`) |
 | Vector de resultados `res` | Escritura de varios hilos | `mutex mtxRes` + `lock_guard` |
 | `total`, `porVac` (op. 12) | Acumulación de varios hilos | `mutex mtxRes` + `lock_guard` (reducción local → global) |
-| `total` (op. 13) | Acumulación de varios hilos | `atomic<int>` |
+| `total` (op. 13) | Acumulación de varios hilos | `mutex mtxRes` + `lock_guard` |
 | `errores` (carga) | Escritura de varios hilos | `mutex mtxRes` + `unique_lock` |
 | `tmp[i]`, `ok[i]`, `lineas[i]` (carga/guardado) | Cada hilo escribe posiciones distintas | Sin exclusión (particionado disjunto) |
 
@@ -103,7 +103,7 @@ graph TD
   I[Dividir pacientes en k bloques] --> C1[Hilo 1: contar]
   I --> C2[Hilo 2: contar]
   I --> C3[Hilo k: contar]
-  C1 --> T[Acumular total: mutex / atomic]
+  C1 --> T[Acumular total con mutex (lock_guard)]
   C2 --> T
   C3 --> T
   T --> R[Mostrar total]
@@ -114,7 +114,7 @@ S0: lo = hoy - 7 (op.12)  |  lo = hoy, hi = hoy + 1 mes (op.13)
 COBEGIN
     Hilo_j: loc = contar dosis en rango dentro de su bloque
             // op.12: lock_guard(mtxRes); total += loc; porVac += mapa_local
-            // op.13: total += loc           (atomic<int>)
+            // op.13: lock_guard(mtxRes); total += loc
 COEND
 S2: imprimir total
 ```
